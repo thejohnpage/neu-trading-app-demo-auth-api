@@ -45,7 +45,14 @@ export class AuthService {
   }
 
   async me(accessToken: string) {
-    return this.jwt.verifyAsync<AccessClaims>(accessToken, { secret: this.secret() });
+    return this.verifyAccess(accessToken);
+  }
+
+  async validateAccess(accessToken: string) {
+    const claims = await this.verifyAccess(accessToken);
+    const subject = await this.findSubjectById(claims.sub, claims.type);
+    if (!subject?.active) throw new UnauthorizedException('Subject disabled');
+    return { active: true, sub: subject.subjectId, type: subject.subjectType, email: subject.email, roles: subject.subjectType === 'ADMIN' ? subject.roles : [] };
   }
 
   private async issueSession(subject: AuthSubject) {
@@ -105,6 +112,7 @@ export class AuthService {
   private async roles(userId:string){const r=await this.db.query<{role_name:string}>(
     'SELECT r.role_name FROM identity.user_roles ur JOIN identity.roles r ON r.role_id=ur.role_id WHERE ur.user_id=$1 ORDER BY r.role_name',[userId]);return r.rows.map(x=>x.role_name);}
 
+  private async verifyAccess(token:string){try{return await this.jwt.verifyAsync<AccessClaims>(token,{secret:this.secret(),issuer:'neu-trading-auth',audience:'neu-trading-api'});}catch{throw new UnauthorizedException('Invalid access token');}}
   private async verifyRefresh(token:string){try{return await this.jwt.verifyAsync<RefreshClaims>(token,{secret:this.secret(),issuer:'neu-trading-auth',audience:'neu-trading-auth'});}catch{throw new UnauthorizedException('Invalid refresh token');}}
   private hash(value:string){return createHash('sha256').update(value).digest('hex');}
   private secret(){const s=this.config.get<string>('JWT_SECRET');if(!s)throw new Error('JWT_SECRET is required');return s;}
