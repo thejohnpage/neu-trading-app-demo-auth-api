@@ -17,6 +17,7 @@ Clients and administrative Users are intentionally separate identity domains.
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
 - `GET /api/v1/auth/me`
+- `GET /api/v1/auth/validate` — validates an access token for the Spring Boot API and returns the current active subject/roles
 
 Login requires an explicit `type` of `CLIENT` or `ADMIN`; the service never promotes or converts one identity type into the other.
 
