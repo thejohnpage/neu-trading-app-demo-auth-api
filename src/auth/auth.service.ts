@@ -58,6 +58,7 @@ export class AuthService {
 
   private async issueSession(subject: AuthSubject) {
     const sid = randomUUID();
+    const capabilities = subject.subjectType === 'ADMIN' ? await this.capabilities(subject.subjectId) : [];
     const accessClaims: AccessClaims = {
       sub: subject.subjectId,
       type: subject.subjectType,
@@ -84,7 +85,7 @@ export class AuthService {
        VALUES ($1,$2,$3,$4,CURRENT_TIMESTAMP + ($5 * INTERVAL '1 day'))`,
       [sid, subject.subjectType === 'ADMIN' ? 'USER' : 'CLIENT', subject.subjectId, this.hash(refreshToken), days],
     );
-    return { accessToken, refreshToken, tokenType: 'Bearer', expiresIn: this.config.get('JWT_ACCESS_TTL', '15m'), subject: accessClaims };
+    return { accessToken, refreshToken, tokenType: 'Bearer', expiresIn: this.config.get('JWT_ACCESS_TTL', '15m'), subject: { ...accessClaims, capabilities } };
   }
 
   private async findSubject(email: string, type: SubjectType): Promise<AuthSubject | null> {
