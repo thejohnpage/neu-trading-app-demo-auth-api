@@ -32,3 +32,7 @@ npm run start:dev
 ```
 
 Default port: 3001.
+
+## Demo client credentials
+
+For local training/demo use, the Auth API can initialize a password for the seeded Joanna client without storing a plaintext password or reusable hash in Git. Set `DEMO_CLIENT_EMAIL=joanna@example.test` and `DEMO_CLIENT_PASSWORD` in the local `.env`. When the password variable is absent or blank, the bootstrap makes no database change. The password is BCrypt-hashed inside the Auth service.
