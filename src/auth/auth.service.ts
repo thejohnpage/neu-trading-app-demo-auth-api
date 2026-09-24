@@ -40,7 +40,7 @@ export class AuthService {
 
   async logout(refreshToken: string) {
     const claims = await this.verifyRefresh(refreshToken);
-    await this.db.query('UPDATE identity.sessions SET revoked_at=CURRENT_TIMESTAMP WHERE session_id=$1', [claims.sid]);
+    await this.db.query('UPDATE identity.sessions SET revoked_at=CURRENT_TIMESTAMP WHERE session_id=$1 AND revoked_at IS NULL', [claims.sid]);
     return { loggedOut: true };
   }
 
@@ -52,7 +52,7 @@ export class AuthService {
     const claims = await this.verifyAccess(accessToken);
     const subject = await this.findSubjectById(claims.sub, claims.type);
     if (!subject?.active) throw new UnauthorizedException('Subject disabled');
-    return { active: true, sub: subject.subjectId, type: subject.subjectType, email: subject.email, roles: subject.subjectType === 'ADMIN' ? subject.roles : [] };
+    return { active: true, sub: subject.subjectId, type: subject.subjectType, email: subject.email, roles: subject.subjectType === 'ADMIN' ? subject.roles : [], exp: claims.exp };
   }
 
   private async issueSession(subject: AuthSubject) {
