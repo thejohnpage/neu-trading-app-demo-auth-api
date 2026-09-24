@@ -22,6 +22,12 @@ export class AuthController {
     return this.auth.logout(request.refreshToken);
   }
 
+  @Get('validate')
+  validate(@Headers('authorization') authorization?: string) {
+    if (!authorization?.startsWith('Bearer ')) throw new UnauthorizedException('Bearer token required');
+    return this.auth.validateAccess(authorization.substring(7));
+  }
+
   @Get('me')
   me(@Headers('authorization') authorization?: string) {
     if (!authorization?.startsWith('Bearer ')) throw new UnauthorizedException('Bearer token required');
