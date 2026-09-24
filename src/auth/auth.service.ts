@@ -52,7 +52,8 @@ export class AuthService {
     const claims = await this.verifyAccess(accessToken);
     const subject = await this.findSubjectById(claims.sub, claims.type);
     if (!subject?.active) throw new UnauthorizedException('Subject disabled');
-    return { active: true, sub: subject.subjectId, type: subject.subjectType, email: subject.email, roles: subject.subjectType === 'ADMIN' ? subject.roles : [], exp: claims.exp };
+    const capabilities = subject.subjectType === 'ADMIN' ? await this.capabilities(subject.subjectId) : [];
+    return { active: true, sub: subject.subjectId, type: subject.subjectType, email: subject.email, roles: subject.subjectType === 'ADMIN' ? subject.roles : [], capabilities, exp: claims.exp };
   }
 
   private async issueSession(subject: AuthSubject) {
@@ -108,6 +109,9 @@ export class AuthService {
       'SELECT user_id,email,password_hash,active FROM identity.users WHERE user_id=$1',[id]);
     const x=r.rows[0]; return x?{subjectType:'ADMIN' as const,subjectId:x.user_id,email:x.email,passwordHash:x.password_hash,active:x.active,roles:await this.roles(x.user_id)}:null;
   }
+
+  private async capabilities(userId:string){const r=await this.db.query<{capability_name:string}>(
+    'SELECT DISTINCT c.capability_name FROM identity.user_roles ur JOIN identity.role_capabilities rc ON rc.role_id=ur.role_id JOIN identity.capabilities c ON c.capability_id=rc.capability_id WHERE ur.user_id=$1 ORDER BY c.capability_name',[userId]);return r.rows.map(x=>x.capability_name);}
 
   private async roles(userId:string){const r=await this.db.query<{role_name:string}>(
     'SELECT r.role_name FROM identity.user_roles ur JOIN identity.roles r ON r.role_id=ur.role_id WHERE ur.user_id=$1 ORDER BY r.role_name',[userId]);return r.rows.map(x=>x.role_name);}
