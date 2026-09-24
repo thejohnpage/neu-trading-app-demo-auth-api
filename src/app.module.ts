@@ -6,6 +6,7 @@ import { AuthService } from './auth/auth.service';
 import { DatabaseService } from './database/database.service';
 import { HealthController } from './health.controller';
 import { DemoCredentialBootstrap } from './auth/demo-credential.bootstrap';
+import { AdminCredentialBootstrap } from './auth/admin-credential.bootstrap';
 
 @Module({
   imports: [
@@ -13,6 +14,6 @@ import { DemoCredentialBootstrap } from './auth/demo-credential.bootstrap';
     JwtModule.register({ global: true }),
   ],
   controllers: [AuthController, HealthController],
-  providers: [DatabaseService, AuthService, DemoCredentialBootstrap],
+  providers: [DatabaseService, AuthService, DemoCredentialBootstrap, AdminCredentialBootstrap],
 })
 export class AppModule {}
