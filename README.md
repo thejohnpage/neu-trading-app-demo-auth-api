@@ -36,3 +36,14 @@ Default port: 3001.
 ## Demo client credentials
 
 For local training/demo use, the Auth API can initialize a password for the seeded Joanna client without storing a plaintext password or reusable hash in Git. Set `DEMO_CLIENT_EMAIL=joanna@example.test` and `DEMO_CLIENT_PASSWORD` in the local `.env`. When the password variable is absent or blank, the bootstrap makes no database change. The password is BCrypt-hashed inside the Auth service.
+
+## Swagger / OpenAPI documentation
+
+When the Auth API is running, open [Swagger UI](http://localhost:3001/api-docs).
+
+- UI: `GET /api-docs`
+- OpenAPI JSON: `GET /api-docs-json`
+- Authentication endpoints remain under `/api/v1/auth`.
+- Swagger's **Authorize** dialog accepts a bearer access JWT for `/auth/me` and `/auth/validate`.
+
+The UI is intended for the local LEAP training environment. Do not expose interactive documentation publicly without reviewing access controls and network restrictions.
